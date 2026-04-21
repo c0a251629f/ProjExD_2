@@ -1,6 +1,7 @@
 import os
 import sys
 import random
+import time
 import pygame as pg
 
 
@@ -50,7 +51,7 @@ def main():
                 return
             
         if kk_rct.colliderect(bb_rct):  # こうかとんと爆弾の衝突判定
-            print("ゲームオーバー")
+            gameover(screen)
             return  # ゲームオーバーの意味でmain関数から出る
 
         screen.blit(bg_img, [0, 0]) 
@@ -83,6 +84,26 @@ def main():
         pg.display.update()
         tmr += 1
         clock.tick(50)
+
+def gameover(screen: pg.Surface) -> None:
+    bg_img = pg.Surface((WIDTH, HEIGHT))
+    bg_img.set_alpha(150)
+    screen.blit(bg_img, [0, 0])
+
+    font = pg.font.Font(None, 80)
+    txt = font.render("Game Over", True, (255, 255, 255))
+    txt_rct = txt.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+
+    kk_img = pg.image.load("fig/8.png")
+    kk_rct1 = kk_img.get_rect(center=(WIDTH // 2 - 200, HEIGHT // 2))
+    kk_rct2 = kk_img.get_rect(center=(WIDTH // 2 + 200, HEIGHT // 2))
+
+    screen.blit(txt, txt_rct)
+    screen.blit(kk_img, kk_rct1)
+    screen.blit(kk_img, kk_rct2)
+
+    pg.display.update()
+    time.sleep(5)
 
 
 if __name__ == "__main__":
