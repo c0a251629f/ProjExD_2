@@ -30,6 +30,7 @@ def main():
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
 
+
     bb_imgs, bb_accs = init_bb_imgs()  # リストを取得
     bb_img = bb_imgs[0]
     #bb_img = pg.Surface((20, 20))  # 爆弾用の空のSurfaceを作る
@@ -42,6 +43,10 @@ def main():
 
     clock = pg.time.Clock()
     tmr = 0
+
+    kk_imgs = get_kk_imgs()  
+    kk_img = kk_imgs[(0, 0)] # 初期画像を設定
+
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT: 
@@ -89,6 +94,8 @@ def main():
         pg.display.update()
         tmr += 1
         clock.tick(50)
+        kk_img = kk_imgs[tuple(sum_mv)]  # 合計移動量をタプル化して画像を取得
+        screen.blit(kk_img, kk_rct)
 
 def gameover(screen: pg.Surface) -> None:
     bg_img = pg.Surface((WIDTH, HEIGHT))
@@ -120,7 +127,21 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
         bb_accs = [a for a in range(1, 11)]
     return bb_imgs, bb_accs
 
-
+def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
+    img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
+    img_flip = pg.transform.flip(img0, True, False)
+    
+    return {
+        (0, 0): img0,
+        (0, -5): pg.transform.rotozoom(img_flip, 90, 1.0),
+        (+5, -5): pg.transform.rotozoom(img_flip, 45, 1.0),
+        (+5, 0): img_flip,
+        (+5, +5): pg.transform.rotozoom(img_flip, -45, 1.0),
+        (0, +5): pg.transform.rotozoom(img_flip, -90, 1.0),
+        (-5, +5): pg.transform.rotozoom(img0, 45, 1.0),
+        (-5, 0): img0,
+        (-5, -5): pg.transform.rotozoom(img0, -45, 1.0),
+    }
 
 
 if __name__ == "__main__":
