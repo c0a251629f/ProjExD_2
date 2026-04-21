@@ -2,6 +2,7 @@ import os
 import sys
 import random
 import time
+import math
 import pygame as pg
 
 
@@ -96,6 +97,7 @@ def main():
         clock.tick(50)
         kk_img = kk_imgs[tuple(sum_mv)]  # 合計移動量をタプル化して画像を取得
         screen.blit(kk_img, kk_rct)
+        vx, vy = calc_orientation(bb_rct, kk_rct, (vx, vy))
 
 def gameover(screen: pg.Surface) -> None:
     bg_img = pg.Surface((WIDTH, HEIGHT))
@@ -125,6 +127,7 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
         pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
         bb_imgs.append(bb_img)
         bb_accs = [a for a in range(1, 11)]
+        bb_img.set_colorkey((0, 0, 0))
     return bb_imgs, bb_accs
 
 def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
@@ -142,6 +145,23 @@ def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
         (-5, 0): img0,
         (-5, -5): pg.transform.rotozoom(img0, -45, 1.0),
     }
+
+def calc_orientation(org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float]) -> tuple[float, float]:
+    diff_x = dst.centerx - org.centerx
+    diff_y = dst.centery - org.centery
+    norm = math.sqrt(diff_x**2 + diff_y**2)
+    
+    # 距離が300未満の場合は慣性でそのまま進む
+    if norm < 300:
+        return current_xy
+    
+    if norm == 0:
+        return current_xy
+
+    # ノルムが√50になるように正規化
+    vx = (diff_x / norm) * math.sqrt(50)
+    vy = (diff_y / norm) * math.sqrt(50)
+    return vx, vy
 
 
 if __name__ == "__main__":
