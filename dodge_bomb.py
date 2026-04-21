@@ -15,11 +15,6 @@ DELTA = {
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
-    """
-    引数で与えられたRectが画面内か画面外かを判定する関数
-    引数：こうかとんRectまたは爆弾Rect
-    戻り値：横方向，縦方向判定結果（True: 画面内，False: 画面外）
-    """
     yoko, tate = True, True
     if rct.left < 0 or WIDTH < rct.right:  # 横方向判定
         yoko = False
@@ -35,8 +30,10 @@ def main():
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
 
-    bb_img = pg.Surface((20, 20))  # 爆弾用の空のSurfaceを作る
-    pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)  # 爆弾円を描く
+    bb_imgs, bb_accs = init_bb_imgs()  # リストを取得
+    bb_img = bb_imgs[0]
+    #bb_img = pg.Surface((20, 20))  # 爆弾用の空のSurfaceを作る
+    #pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)  # 爆弾円を描く
     bb_img.set_colorkey((0, 0, 0))  # 爆弾の黒い部分を透過させる
     bb_rct = bb_img.get_rect()  # 爆弾Rectを取得する
     bb_rct.centerx = random.randint(0, WIDTH)  # 爆弾の初期横座標を設定する
@@ -74,7 +71,15 @@ def main():
         if check_bound(kk_rct) != (True, True):  # 画面外だったら
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
         screen.blit(kk_img, kk_rct)
-        bb_rct.move_ip(vx, vy)
+        idx = min(tmr // 500, 9)  # 時間に応じてインデックスを取得
+        avx = vx * bb_accs[idx]  # 加速度を反映
+        avy = vy * bb_accs[idx]
+        bb_img = bb_imgs[idx]  # サイズの異なる画像を再設
+        # Surfaceの大きさが変わったのでRectのサイズを更新
+        bb_rct.width = bb_img.get_rect().width
+        bb_rct.height = bb_img.get_rect().height
+        bb_rct.move_ip(avx, avy)  # vx, vy ではなく avx, avy を渡す
+        #bb_rct.move_ip(vx, vy)
         yoko, tate = check_bound(bb_rct)
         if not yoko:  # 横方向の判定
             vx *= -1
@@ -104,6 +109,16 @@ def gameover(screen: pg.Surface) -> None:
 
     pg.display.update()
     time.sleep(5)
+
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    bb_imgs = []
+    bb_accs = [a for a in range(1, 11)]
+    for r in range(1, 11):
+        bb_img = pg.Surface((20*r, 20*r))
+        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
+        bb_imgs.append(bb_img)
+        bb_accs = [a for a in range(1, 11)]
+    return bb_imgs, bb_accs
 
 
 if __name__ == "__main__":
