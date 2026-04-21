@@ -1,9 +1,9 @@
-import os
-import sys
-import random
-import time
 import math
+import os
 import pygame as pg
+import random
+import sys
+import time
 
 
 WIDTH, HEIGHT = 1100, 650
@@ -15,6 +15,7 @@ DELTA = {
 }
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+
 def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
     yoko, tate = True, True
     if rct.left < 0 or WIDTH < rct.right:  # 横方向判定
@@ -23,6 +24,7 @@ def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
         tate = False
     return yoko, tate
 
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -30,7 +32,6 @@ def main():
     kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
-
 
     bb_imgs, bb_accs = init_bb_imgs()  # リストを取得
     bb_img = bb_imgs[0]
@@ -99,7 +100,12 @@ def main():
         screen.blit(kk_img, kk_rct)
         vx, vy = calc_orientation(bb_rct, kk_rct, (vx, vy))
 
+
 def gameover(screen: pg.Surface) -> None:
+    """
+    ゲームオーバー時に、画面をブラックアウトし、泣いているこうかとんとGame Overを表示する関数
+    引数: screen 画面のSurface
+    """
     bg_img = pg.Surface((WIDTH, HEIGHT))
     bg_img.set_alpha(150)
     screen.blit(bg_img, [0, 0])
@@ -119,7 +125,12 @@ def gameover(screen: pg.Surface) -> None:
     pg.display.update()
     time.sleep(5)
 
+
 def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    """
+    10段階の大きさが異なる爆弾のSurfaceリストと、加速度のリストを作成する関数
+    戻り値: 爆弾Surfaceのリストと、加速度のリストのタプル
+    """
     bb_imgs = []
     bb_accs = [a for a in range(1, 11)]
     for r in range(1, 11):
@@ -130,7 +141,12 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
         bb_img.set_colorkey((0, 0, 0))
     return bb_imgs, bb_accs
 
+
 def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
+    """
+    移動量に応じたこうかとんの画像Surfaceを格納した辞書を作成する関数
+    戻り値: 移動量タプルをキー、画像Surfaceを値とする辞書
+    """
     img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
     img_flip = pg.transform.flip(img0, True, False)
     
@@ -146,7 +162,15 @@ def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
         (-5, -5): pg.transform.rotozoom(img0, -45, 1.0),
     }
 
+
 def calc_orientation(org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float]) -> tuple[float, float]:
+    """
+    爆弾がこうかとんに向かって飛ぶように方向ベクトルを計算する関数
+    引数1 org: 爆弾のRect
+    引数2 dst: こうかとんのRect
+    引数3 current_xy: 現在の方向ベクトル
+    戻り値: 新しい方向ベクトル(vx, vy)
+    """
     diff_x = dst.centerx - org.centerx
     diff_y = dst.centery - org.centery
     norm = math.sqrt(diff_x**2 + diff_y**2)
